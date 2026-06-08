@@ -1,0 +1,36 @@
+# Python virtual environment
+venv/
+
+# Environment variables
+.env
+.env.*
+
+# SQLite database files and local data folders
+data/
+*.db
+*.sqlite
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs and runtime files
+*.log
+*.pid
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Coverage and test artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Misc
+*.swp
+
+/alembic
+*.ini
