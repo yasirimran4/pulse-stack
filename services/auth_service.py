@@ -1,53 +1,56 @@
 from models.user import User
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException ,status
 from utils.security import hash_password , verify_password
 from utils.jwt_token import create_access_token
 from config.config import settings
+from sqlalchemy import select
 
-def register_user(user,session:Session):
+async def register_user(request, session:AsyncSession):
 
-    existing_user = session.query(User).filter(User.email == user.email).first()
+    result = await session.execute(select(User).where(User.email == request.email))
+    existing_user = result.scalars().first()
+
     
     if existing_user:
         raise HTTPException(status_code=400,detail="User already registered")
     
-    hashed_password = hash_password(user.password)
+    hashed_password = hash_password(request.password)
 
-    new_user = User(
-        name = user.name,
-        email = user.email,
+    user = User(
+        name = request.name,
+        email = request.email,
         hashed_password = hashed_password
     )
     
-    session.add(new_user)
+    session.add(user)
 
-    session.commit()
+    await session.commit()
 
-    session.refresh(new_user)
+    await session.refresh(user)
 
     return user
 
-def login_user( user,session:Session):
+async def login_user( request,session:AsyncSession):
 
-    existing_user = session.query(User).filter(User.email == user.email).first()
+    result = await session.execute(select(User).where(User.email == request.email))
+    user = result.scalars().first()
 
-    print(existing_user)
 
-    if not existing_user:
+    if not user:
         raise  HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email"
         )
     
-    is_user = verify_password(user.password,existing_user.hashed_password)
+    is_verify = verify_password(request.password,user.hashed_password)
     
-    if not is_user:
+    if not is_verify:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Password is wrong! try Again")
     
-    access_token = create_access_token({"sub":str(existing_user.id)})
+    access_token = create_access_token({"sub":str(user.id)})
 
-    return {"access_token" : access_token,"token_type" : "bearer" ,"expires_in" : settings.token_expiry_time_minutes * 60}
+    return {"access_token" : access_token,"token_type" : "bearer" ,"expires_in" : settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60}
     
     
 

@@ -1,12 +1,11 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.orm import DeclarativeBase
 from config.config import settings
 
-engine = create_engine(
-    settings.database_url,
+engine = create_async_engine(
+    settings.DATABASE_URL,
     echo=True,
-    connect_args={"check_same_thread":False}
 )
 
-
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass

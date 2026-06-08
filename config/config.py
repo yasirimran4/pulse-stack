@@ -3,15 +3,14 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # All configrations
 class Settings(BaseSettings):
     # JWT Configuration
-
-    secret_key :str = "my_n@me_y@asir.?"
-    database_url : str = "sqlite:///./data/users.db"
-    token_expiry_time_minutes : int = 30
-    algorithm : str = 'HS256'
+    DATABASE_URL : str = "postgresql+asyncpg://neondb_owner:npg_jkr1NJvtZ2uR@ep-misty-smoke-apt068uz-pooler.c-7.us-east-1.aws.neon.tech/neondb"
+    SECRET_KEY : str = "my_n@me_y@asir.?"
+    ALGORITHM : str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES : int = 30
 
     model_config = SettingsConfigDict(
         env_file='.env',
-        extra='ignore'
+        extra= 'ignore'
     )
 
 settings = Settings()
