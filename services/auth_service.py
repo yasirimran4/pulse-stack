@@ -1,4 +1,4 @@
-from models.user import User
+from models.auth import User
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException ,status
 from utils.security import hash_password , verify_password

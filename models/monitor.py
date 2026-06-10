@@ -4,31 +4,13 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship 
 from enum import Enum
 
-class UserRole(str,Enum):
-    ADMIN = "admin"
-    USER = "user"
-
-class Status(str,Enum):
+class MonitorStatus(str,Enum):
     UP = "up"
     DOWN = "down"
 
-class User(Base):
-
-    __tablename__ = "users"
-
-    id = Column(Integer,primary_key=True,index=True)
-    name = Column(String(100),nullable=False)
-    email = Column(String(100),unique=True,nullable=False,index=True)
-    hashed_password = Column(String(255),nullable=False)
-    role = Column(SQLEnum(UserRole),default=UserRole.USER,nullable=False)
-    is_verified = Column(Boolean,default=False)
-    is_active = Column(Boolean,default=True)
-    created_at = Column(DateTime(timezone=True),server_default = func.now())
-    updated_at = Column(DateTime(timezone=True),server_default = func.now(),onupdate = func.now(),nullable=True)
-    
-    # Relationships
-    monitors = relationship("Monitor",back_populates="user",cascade="all, delete-orphan")
-
+class IncidentStatus(str,Enum):
+    OPEN = "open"
+    RESOLVED = "resolved"
 
 class Monitor(Base):
 
@@ -38,7 +20,7 @@ class Monitor(Base):
     name = Column(String(255),nullable=False)
     url = Column(String(2048),nullable=False)
     check_interval = Column(Integer,nullable=False)
-    current_status = Column(SQLEnum(Status),default=Status.UP)
+    current_status = Column(SQLEnum(MonitorStatus),default=MonitorStatus.UP)
     is_active = Column(Boolean,default=True)
     last_checked_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True),server_default = func.now())
@@ -61,14 +43,14 @@ class MonitorCheck(Base):
 
     __tablename__ = "monitor_checks"
     id = Column(Integer,primary_key=True,index=True)
-    status = Column(SQLEnum(Status),default=Status.UP,nullable=False)
+    status = Column(SQLEnum(MonitorStatus),default=MonitorStatus.UP,nullable=False,index=True)
     status_code = Column(Integer)
-    response_time_ms = Column(Integer,nullable=False)
+    response_time_ms = Column(Integer,nullable=True)
     error_message = Column(String(500),nullable=True)
-    created_at = Column(DateTime(timezone=True),server_default = func.now())
+    created_at = Column(DateTime(timezone=True),server_default = func.now(),index=True)
 
     # Foreign Key
-    monitor_id = Column(Integer,ForeignKey("monitors.id"),nullable=False)
+    monitor_id = Column(Integer,ForeignKey("monitors.id"),nullable=False,index=True)
 
     #RelationsShips and Foreign Key
     monitor = relationship("Monitor",back_populates="monitor_checks")
@@ -78,10 +60,10 @@ class Incident(Base):
     __tablename__ = "incidents"
     id = Column(Integer,primary_key=True,index=True)
     started_at = Column(DateTime(timezone=True),nullable=False)
-    duration = Column(Integer)  # Duration for down time
+    duration_in_seconds = Column(Integer)  # Duration for down time
     resolved_at = Column(DateTime(timezone=True),nullable=True)
     reason = Column(String(500),nullable=True)
-    status = Column(SQLEnum(Status),default=Status.UP,nullable=False) # open/resolved
+    status = Column(SQLEnum(IncidentStatus),default=IncidentStatus.OPEN,nullable=False) # open/resolved
     created_at = Column(DateTime(timezone=True),server_default = func.now())
 
     # Foreign Key

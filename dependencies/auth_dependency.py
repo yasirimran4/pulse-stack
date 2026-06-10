@@ -3,7 +3,7 @@ from fastapi.security import HTTPBearer , HTTPAuthorizationCredentials
 from fastapi import Depends , HTTPException ,status
 from sqlalchemy.orm import Session
 from utils.jwt_token import verify_access_token
-from models.user import User
+from models.auth import User
 
 async def get_db():
     async with SessionLocal() as session:
